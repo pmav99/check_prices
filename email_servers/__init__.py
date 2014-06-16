@@ -9,6 +9,7 @@ email : gmail, pmav99
 
 __all__ = ["send_email"]
 
+import logging
 from email.utils import formataddr
 from email.mime.text import MIMEText
 
@@ -16,6 +17,7 @@ from utils import Configuration
 from .gmx import get_server as get_server_gmx
 from .gmail import get_server as get_server_gmail
 
+logger = logging.getLogger("email")
 
 GET_SERVER_FUNCTIONS = {
     "gmail.com": get_server_gmail,
@@ -57,11 +59,14 @@ def send_email(url, initial_price, current_price, delta):
     password = config.password
     recipients = config.recipients
     provider = username.split("@")[1]       # determine the email provider by parsing the username
+    logging.debug("Email provider: %s", provider)
+
     get_server = GET_SERVER_FUNCTIONS[provider]
     server = get_server(username, password)
     msg = get_message(url, initial_price, current_price, delta)
 
     try:
+        logger.info("Sending email to %r", recipients)
         server.sendmail(username, recipients, msg.as_string())
     finally:
         server.quit()

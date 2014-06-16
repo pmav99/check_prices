@@ -23,7 +23,6 @@ def get_price(url):
     page = get_page(url)
     result = PATTERN.search(page)
     price = result.groups()[0]
-    print(price)
     # fix data
     price = float(price.replace(",", "."))
     return price

@@ -2,13 +2,20 @@
 # -*- coding: utf-8 -*-
 
 """
-Notify via email.
+Notify via email when there are price drops on greek eshop's products.
+
+Supported eshops:
+
+    * www.skroutz.gr
+    * www.bestprice.gr
 
 """
 
+import urllib
+import logging
 import argparse
 
-from utils import Configuration
+from utils import Configuration, setup_logging
 from parsers import get_price
 from email_servers import send_email
 
@@ -45,27 +52,41 @@ def parse_arguments():
 
 
 def process(row):
+    log = logging.getLogger("process")
     url, initial_price, percentage = row.split(",")
     initial_price = float(initial_price)
-    percentage = float(percentage) / 100
-    current_price = get_price(url)
-    delta = (initial_price - current_price) / initial_price
-    if delta > percentage:
-        send_email(url, initial_price, current_price, delta)
+    percentage = float(percentage)
+    try:
+        current_price = get_price(url)
+    except urllib.error.HTTPError:
+        log.error("Wrong url. Please check the CSV.")
     else:
-        print("Small change")
+        delta = (initial_price - current_price) / initial_price * 100
+        log.debug("Initial price: %.2f", initial_price)
+        log.debug("Current price: %.2f", current_price)
+        if delta > percentage:
+            log.warning("The price did change significantly (%.2f%% > %.2f%%)", delta, percentage)
+            send_email(url, initial_price, current_price, delta)
+        else:
+            log.info("The price has not changed significantly (%.2f%% < %.2f%%)", delta, percentage)
 
 
 def main():
     """ main function. """
+    # initialize things
     parse_arguments()
+    setup_logging()
     config = Configuration()
 
+    log = logging.getLogger("main")
     with open(config.input_file) as fd:
-        data = fd.readlines()
+        log.info("Opening: %s", config.input_file)
+        rows = fd.readlines()
+        log.info("It contains %d rows", len(rows))
 
-    for row in data:
+    for row in rows:
         process(row)
+
 
 if __name__ == "__main__":
     main()
