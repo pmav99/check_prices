@@ -13,11 +13,7 @@ from utils import get_page
 PATTERN = re.compile(
     r"(?:lowPrice\">)"           # the opening <span>
     r"(\d+[\.|,]\d{2})"          # the actual price
-    r"(?:"
-        r"\s{0,1}"               # optionally a space between price and currency
-        r".+"                    # the currency symbol
-        r"<\/span>"              # the closing <\span>
-    r")",
+    r"(?:.*<\/span>)",           # the currency symbol + closing <\span>
     re.MULTILINE)
 
 
