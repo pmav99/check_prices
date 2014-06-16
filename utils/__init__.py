@@ -34,7 +34,7 @@ class Configuration(Borg):
 
         self.username = parser.get("email", "username")
         self.password = parser.get("email", "password")
-        self.recipients = parser.get("email", "recipients")
+        self.recipients = [line for line in parser.get("email", "recipients").splitlines() if line]
         self.input_file = parser.get("general", "input_file")
 
 

@@ -42,7 +42,7 @@ def get_message(url, initial_price, current_price, delta):
 
     # create the actual email message
     msg = MIMEText(message)
-    msg['To'] = formataddr(('Recipient', config.recipients))
+    msg['To'] = ", ".join(formataddr(('Recipient', recipient)) for recipient in config.recipients)
     msg['From'] = formataddr(('Author', config.username))
     msg['Subject'] = 'Προσφορά'
 
